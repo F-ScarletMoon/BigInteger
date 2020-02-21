@@ -33,7 +33,11 @@ public class Transformer {
             s.append("-");
         for (int i = a.length - 1; i > 0; i--) {
             if (i != a.length - 1) {
-                for (int j = (a[i]!=0?a[i]:a[i]+1); j < 1000; j *= 10)
+                if (a[i] < 10)
+                    s.append("000");
+                else if (a[i] < 100)
+                    s.append("00");
+                else if (a[i] < 1000)
                     s.append("0");
             }
             s.append(a[i]);
