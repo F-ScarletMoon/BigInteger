@@ -1,7 +1,7 @@
 public class Main {
     public static void main(String args[]) {
-        String sa = "-9,0500,0004";
-        String sb = "-2,0015";
+        String sa = "1,0000,0000";
+        String sb = "1";
         //int[] a = Transformer.intoArray(sa);
         //int[] b = Transformer.intoArray(sb);
         //int[] c;
@@ -19,10 +19,11 @@ public class Main {
 
         LongInt a = new LongInt(sa);
         LongInt b = new LongInt(sb);
-        a.add(b);
+        a.divAsHand(b);
+        //a.setValue(new int[]{5});
         System.out.println(a.toString());
 
-        //int[] d = Calculation.divAsHand(a,b);
+        //int[] d = Calculation.mul(a,b);
         //int[] d = {0,9,10};
         //System.out.println(Transformer.intoSring(d));
 

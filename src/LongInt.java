@@ -1,7 +1,11 @@
+import java.util.Arrays;
+
 public class LongInt {
     private int bit = 0;
     private int[] value = {0};
     private boolean isMinus = false;
+
+    private static final LongInt tenK = new LongInt(10000);
 
     LongInt(){}
 
@@ -33,6 +37,7 @@ public class LongInt {
 
     public void setValue(int[] value) {
         this.value = value;
+        this.bit = value.length;
     }
 
     public int[] getValue() {
@@ -47,17 +52,22 @@ public class LongInt {
         return this.isMinus;
     }
 
-    public boolean compareTo(LongInt longInt) {
+    public boolean biggerThan(LongInt longInt) {
         if (bit > longInt.bit)
             return true;
         else if (bit < longInt.bit)
             return false;
         else {
-            if(value[bit-1] > longInt.value[bit-1])
-                return true;
-            else 
-                return false;
+            for (int i = bit-1; i >= 0; i--) {
+                if (value[i] > longInt.value[i])
+                    return true;
+            }
+            return false;
         }
+    }
+
+    public boolean EqualTo(LongInt longInt) {
+        return Arrays.equals(value,longInt.value);
     }
 
     public void setBit(int length) {
@@ -68,11 +78,13 @@ public class LongInt {
     }
 
     public void removePreZero() {
-        int flag = 0;
-        for(int i = bit-1; i > 0; i--)
-            if (value[i] == 0)
-                flag++;
-        setBit(bit-flag);
+        while (true) {
+            if (bit > 1 && value[bit-1] == 0) {
+                setBit(bit - 1);
+            }
+            else
+                break;
+        }
     }
 
     public void equal(LongInt longInt) {
@@ -103,52 +115,103 @@ public class LongInt {
             return s.toString();
     }
 
-    public void add(LongInt longInt) {
-        LongInt a,b;
-        boolean flag = compareTo(longInt);
-        if(flag) {
-            longInt.setBit(bit);
-            a = this;
-            b = longInt;
-        }
-        else {
-            setBit(longInt.bit);
-            a = longInt;
-            b = this;
-        }
+    public LongInt add(LongInt longInt) {
+        boolean flag = this.biggerThan(longInt);
 
-        if (!isMinus && !longInt.isMinus || isMinus && longInt.isMinus)
-            value = absOfAdd(this,longInt);
+        if (isMinus ^ !longInt.isMinus)
+            value = ArrayHanlder.add(this.value,longInt.value);
         else {
-            value = absOfSub(a,b);
-            isMinus = flag ? false : true;
+            value = ArrayHanlder.sub(this.value,longInt.value);
+            isMinus = flag == this.isMinus;
         }
 
         removePreZero();
         longInt.removePreZero();
+        return this;
     }
 
-    private static int[] absOfAdd(LongInt a,LongInt b) {
-        int[] c = new int[a.bit+1];
+    public LongInt sub(LongInt longInt) {
+        boolean flag = this.biggerThan(longInt);
 
-        for (int i = 0; i < a.bit; i++) {
-            c[i] += a.value[i] + b.value[i];
-            c[i + 1] += c[i] / 10000;
-            c[i] %= 10000;
+        if (isMinus ^ longInt.isMinus)
+            value = ArrayHanlder.add(this.value,longInt.value);
+        else {
+            value = ArrayHanlder.sub(this.value,longInt.value);
+            isMinus = flag == isMinus;
         }
 
-        return c;
+        removePreZero();
+        longInt.removePreZero();
+        return this;
     }
 
-    private static int[] absOfSub(LongInt m,LongInt b) {
-        int[] a = m.value;
-        for(int i = 0; i < a.length; i++) {
-            if(a[i] < b.value[i]) {
-                a[i] += 10000;
-                a[i + 1] -= 1;
+
+    public LongInt mul(LongInt longInt) {
+        //模拟手算
+        int[] c = new int[bit + longInt.bit];
+        long temp;
+        for (int i = 0; i < bit; i++) {
+            for (int j = 0; j < longInt.bit; j++) {
+                temp = value[i] * longInt.value[j];
+                c[i+j] += (int)temp%10000;
+                c[i+j+1] += (int)temp/10000 + c[i+j]/10000;
+                c[i+j] %= 10000;
             }
-            a[i] -= b.value[i];
         }
-        return a;
+        setValue(c);
+        isMinus = isMinus ^ longInt.isMinus;
+        return this;
+    }
+
+    public int[] divAsSub(LongInt longInt) {
+        int answer = 0;
+        int[] remain;
+
+        while (true) {
+            if (biggerThan(longInt)) {
+                sub(longInt);
+                answer++;
+            }
+            else if (EqualTo(longInt)) {
+                answer++;
+                remain = new int[]{0};
+                break;
+            }
+            else {
+                remain = value;
+                break;
+            }
+        }
+
+        System.out.println(answer);
+        setValue(new LongInt(answer).value);
+        setMinus(isMinus ^ longInt.isMinus);
+
+        return remain;
+    }
+
+    public int[] divAsHand(LongInt longInt) {
+        int[] quo = {0,0};
+        int[] temp;
+        int[] singleNumber = new int[1];
+        int[] remain = new int[longInt.bit-1];
+        LongInt tempLongInt = new LongInt();
+
+        System.arraycopy(value,bit-longInt.bit+1,remain,0,longInt.bit-1);
+        //减法代替除法
+        for(int i = bit-longInt.bit; i>=0; i--) {
+            singleNumber[0] = value[i];
+            temp = ArrayHanlder.add(singleNumber, ArrayHanlder.shiftR(remain));
+            System.out.println(Arrays.toString(temp));
+            tempLongInt.setValue(temp);
+            remain = tempLongInt.divAsSub(longInt);
+            quo = ArrayHanlder.shiftR(quo);
+            quo = ArrayHanlder.add(quo,tempLongInt.value);
+        }
+
+        this.value = quo;
+        this.isMinus = isMinus^longInt.isMinus;
+
+        return remain;
     }
 }
