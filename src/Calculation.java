@@ -1,6 +1,7 @@
 public class Calculation {
 
     private final static int[] one = {0,1};
+    private final static int[] tenK = {0,0,1};
 
     //处理正负号
     public static int[] add(int[] a, int[] b) {
@@ -80,7 +81,7 @@ public class Calculation {
     public static int[] div(int[] a,int[] b) {
         int[] answer;
         if (a[0] == 0 && b[0] == 0 || a[0] == 1 && b[0] == 1)
-            return Calculation.divT(a,b);
+            return Calculation.divAsSub(a,b)[0];
         else {
             answer = Calculation.div(a,b);
             answer[0] = 1;
@@ -117,7 +118,7 @@ public class Calculation {
 
     private static int[] mulT(int[] a, int[] b) {
         //模拟手算
-        int[] c = new int[a.length + b.length];
+        int[] c = new int[a.length + b.length-1];
         long temp;
         for (int i = 1; i < a.length; i++) {
             for (int j = 1; j < b.length; j++) {
@@ -130,8 +131,8 @@ public class Calculation {
         return c;
     }
 
-    private static int[] divT(int[] a, int[] b) {
-        int[] answer = {0,0};
+    private static int[][] divAsSub(int[] a, int[] b) {
+        int[][] answer = {{0,0},{0,0}};
         //控制循环
         boolean flag = true;
         while (flag) {
@@ -139,8 +140,7 @@ public class Calculation {
             if (a[a.length-1] > b[b.length-1]) {
                 a = Calculation.subT(a, b);
                 //商加1
-                answer = Calculation.add(answer,Calculation.one);
-                System.out.println(Transformer.intoSring(answer));
+                answer[0] = Calculation.add(answer[0],Calculation.one);
             }
             else if (a[a.length-1] == b[b.length-1]) {
                 if (b[b.length-1] == 0) {
@@ -148,15 +148,36 @@ public class Calculation {
                     b = Transformer.setLength(b,b.length-1);
                 }
                 else {
-                    answer = Calculation.add(answer,Calculation.one);
+                    answer[0] = Calculation.add(answer[0],Calculation.one);
                     flag = false;
                 }
             }
-            else
+            else {
+                answer[1] = a;
                 flag = false;
+            }
         }
         return answer;
     }
 
+    public static int[] divAsHand(int[] a,int[] b) {
+        int[] answer = {0,0};
+        int[] temp = new int[b.length+1];
+        int[][] ints = new int[2][b.length-1];
+
+        b = Transformer.removePreZero(b);
+        System.arraycopy(a,a.length-b.length+2,ints[1],1,b.length-2);
+        //减法代替除法
+        for(int i = a.length-b.length+1; i>0; i--) {
+            temp = add(Transformer.intoArray(a[i]),mulT(ints[1],tenK));
+            temp = Transformer.removePreZero(temp);
+            b = Transformer.setLength(b,temp.length);
+            ints = divAsSub(temp,b);
+            answer = mulT(answer,tenK);
+            answer = add(answer,ints[0]);
+        }
+
+        return answer;
+    }
 
 }

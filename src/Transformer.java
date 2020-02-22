@@ -53,8 +53,25 @@ public class Transformer {
     //将数组长度设为指定值
     public static int[] setLength(int[] a, int length) {
         int[] b = new int[length];
-        for(int i = 0; i < b.length && i < a.length; i++)
-            b[i] = a[i];
+        //for(int i = 0; i < b.length && i < a.length; i++)
+            //b[i] = a[i];
+        System.arraycopy(a,0,b,0,a.length > b.length?b.length:a.length);
         return b;
+    }
+
+    //去除先导0
+    public static int[] removePreZero(int[] a) {
+        while (true) {
+            if (a.length > 2 && a[a.length-1] == 0)
+                a = setLength(a,a.length-1);
+            else
+                return a;
+        }
+    }
+
+    //把int整数变为数组
+    public static int[] intoArray(int i) {
+        int[] i1 = {0,i};
+        return i1;
     }
 }
