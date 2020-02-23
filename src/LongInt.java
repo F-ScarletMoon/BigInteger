@@ -52,7 +52,7 @@ public class LongInt {
         return this.isMinus;
     }
 
-    public boolean biggerThan(LongInt longInt) {
+    public boolean absBiggerThan(LongInt longInt) {
         if (bit > longInt.bit)
             return true;
         else if (bit < longInt.bit)
@@ -61,8 +61,32 @@ public class LongInt {
             for (int i = bit-1; i >= 0; i--) {
                 if (value[i] > longInt.value[i])
                     return true;
+                else if (value[i] < longInt.value[i])
+                    return false;
             }
             return false;
+        }
+    }
+
+    public boolean biggerThan(LongInt longInt) {
+        if(isMinus && !longInt.isMinus)
+            return false;
+        else if(!isMinus && longInt.isMinus)
+            return true;
+        else {
+            if (bit > longInt.bit)
+                return true;
+            else if (bit < longInt.bit)
+                return false;
+            else {
+                for (int i = bit-1; i >= 0; i--) {
+                    if (value[i] > longInt.value[i])
+                        return true;
+                    else if (value[i] < longInt.value[i])
+                        return false;
+                }
+                return false;
+            }
         }
     }
 
@@ -88,8 +112,7 @@ public class LongInt {
     }
 
     public void equal(LongInt longInt) {
-        this.value = longInt.value;
-        this.bit = longInt.bit;
+        this.setValue(longInt.value);
         this.isMinus = longInt.isMinus;
     }
 
@@ -116,12 +139,12 @@ public class LongInt {
     }
 
     public LongInt add(LongInt longInt) {
-        boolean flag = this.biggerThan(longInt);
+        boolean flag = this.absBiggerThan(longInt);
 
         if (isMinus ^ !longInt.isMinus)
-            value = ArrayHanlder.add(this.value,longInt.value);
+            setValue(ArrayHanlder.add(this.value,longInt.value));
         else {
-            value = ArrayHanlder.sub(this.value,longInt.value);
+            setValue(ArrayHanlder.sub(this.value,longInt.value));
             isMinus = flag == this.isMinus;
         }
 
@@ -131,12 +154,12 @@ public class LongInt {
     }
 
     public LongInt sub(LongInt longInt) {
-        boolean flag = this.biggerThan(longInt);
+        boolean flag = this.absBiggerThan(longInt);
 
         if (isMinus ^ longInt.isMinus)
-            value = ArrayHanlder.add(this.value,longInt.value);
+            setValue(ArrayHanlder.add(this.value,longInt.value));
         else {
-            value = ArrayHanlder.sub(this.value,longInt.value);
+            setValue(ArrayHanlder.sub(this.value,longInt.value));
             isMinus = flag == isMinus;
         }
 
@@ -168,7 +191,7 @@ public class LongInt {
         int[] remain;
 
         while (true) {
-            if (biggerThan(longInt)) {
+            if (absBiggerThan(longInt)) {
                 sub(longInt);
                 answer++;
             }
@@ -182,8 +205,6 @@ public class LongInt {
                 break;
             }
         }
-
-        System.out.println(answer);
         setValue(new LongInt(answer).value);
         setMinus(isMinus ^ longInt.isMinus);
 
@@ -202,15 +223,14 @@ public class LongInt {
         for(int i = bit-longInt.bit; i>=0; i--) {
             singleNumber[0] = value[i];
             temp = ArrayHanlder.add(singleNumber, ArrayHanlder.shiftR(remain));
-            System.out.println(Arrays.toString(temp));
             tempLongInt.setValue(temp);
             remain = tempLongInt.divAsSub(longInt);
             quo = ArrayHanlder.shiftR(quo);
             quo = ArrayHanlder.add(quo,tempLongInt.value);
         }
 
-        this.value = quo;
-        this.isMinus = isMinus^longInt.isMinus;
+        this.setValue(quo);
+        this.setMinus(isMinus^longInt.isMinus);
 
         return remain;
     }
