@@ -234,4 +234,48 @@ public class LongInt {
 
         return remain;
     }
+
+    public LongInt mulAsFFT(LongInt longInt) {
+        int temp = 0;
+        int[] a = value;
+        int[] b = longInt.value;
+
+        a = ArrayHanlder.ensureLength(a,b);
+        b = ArrayHanlder.ensureLength(b,a);
+
+        Complex[] c = new Complex[a.length];
+        Complex[] d = new Complex[b.length];
+        for (int i = 0;i<c.length;i++) {
+            c[i] = new Complex(a[i],0);
+            d[i] = new Complex(b[i],0);
+        }
+
+        int flag = 1;
+        while (flag < c.length*2) flag*=2;
+
+        c = ArrayHanlder.FFT(c,flag);
+        d = ArrayHanlder.FFT(d,flag);
+
+        for(int i = 0; i < c.length; i++)
+            c[i] = c[i].mul(d[i]);
+
+        c = ArrayHanlder.IFFT(c,c.length);
+
+        for(int i = 0;i<c.length;i++) c[i].r/=c.length;
+
+        int[] result = new int[flag+1];
+
+        for(int i = 0; i < c.length; i++) {
+            temp =(int) c[i].r;
+            result[i] += (int)temp%10000;
+            result[i+1] += (int)temp/10000 + result[i]/10000;
+            result[i] %= 10000;
+        }
+
+        result = ArrayHanlder.removePreZero(result);
+
+        setValue(result);
+
+        return this;
+    }
 }

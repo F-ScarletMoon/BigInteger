@@ -1,4 +1,5 @@
 public class ArrayHanlder {
+    static int kkk = 0;
     public static int[] add(int[] a,int[] b) {
         a = ensureLength(a,b);
         b = ensureLength(b,a);
@@ -90,6 +91,75 @@ public class ArrayHanlder {
         int[] b = new int[length];
         System.arraycopy(a,0,b,0,a.length > b.length?b.length:a.length);
         return b;
+    }
+
+
+    public static Complex[] FFT(Complex[] a,int n) {
+        a = emsureLengthFFT(a);
+
+        Complex[] result = new Complex[n];
+        Complex[] tempA = new Complex[a.length/2];
+        Complex[] tempB = new Complex[a.length/2];
+        Complex[] resultA;
+        Complex[] resultB;
+
+        if(a.length == 1) {
+            for(int i = 0; i < n; i++) result[i] = Complex.omega(n,i).mul(a[0]);
+            return result;
+        }
+        else {
+            for(int i = 0,j=0;i < a.length;i +=2,j++) {
+                tempA[j] = a[i];
+                tempB[j] = a[i+1];
+            }
+            resultA = FFT(tempA,n/2);
+            resultB = FFT(tempB,n/2);
+            for(int i = 0;i < n/2;i++) {
+                result[i] = resultA[i].add(resultB[i].mul(Complex.omega(n, i)));
+                result[i + n / 2] = resultA[i].sub(resultB[i].mul(Complex.omega(n, i)));
+            }
+            return result;
+        }
+    }
+
+    public static Complex[] IFFT(Complex[] a, int n) {
+        Complex[] result = new Complex[n];
+        Complex[] tempA = new Complex[a.length/2];
+        Complex[] tempB = new Complex[a.length/2];
+        Complex[] resultA;
+        Complex[] resultB;
+
+        if(a.length == 1) {
+            for(int i = 0; i < n; i++) result[i] = Complex.omega(n,i).conj().mul(a[0]);
+            return result;
+        }
+        else {
+            for(int i = 0,j=0;i < a.length;i +=2,j++) {
+                tempA[j] = a[i];
+                tempB[j] = a[i+1];
+            }
+            resultA = IFFT(tempA,n/2);
+            resultB = IFFT(tempB,n/2);
+            for(int i = 0;i < n/2;i++) {
+                result[i] = resultA[i].add(resultB[i].mul(Complex.omega(n, i).conj()));
+                result[i + n / 2] = resultA[i].sub(resultB[i].mul(Complex.omega(n, i).conj()));
+            }
+
+            return result;
+        }
+    }
+
+    private static Complex[] emsureLengthFFT(Complex[] a) {
+        if (a.length > 1) {
+            int i = 2;
+            while (i < a.length) i*=2;
+            Complex[] b = new Complex[i];
+            System.arraycopy(a,0,b,0,a.length);
+            for(int j = a.length;j<b.length;j++) b[j] = new Complex();
+
+            return b;
+        }
+        else return a;
     }
 
 }
